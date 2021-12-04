@@ -33,9 +33,9 @@ deleteDigits (x:xs)
 leetSpeak :: String -> String
 leetSpeak [] = "!"
 leetSpeak (x:xs)
-        | x == 'e' = "7" : leetSpeak xs
-        | x == 'o' = "0" : leetSpeak xs
-        | x == 's' = "z" : leetSpeak xs
+        | x == 'e' = "7" ++ leetSpeak xs
+        | x == 'o' = "0" ++ leetSpeak xs
+        | x == 's' = "z" ++ leetSpeak xs
         | otherwise = x : leetSpeak xs
 
 
@@ -46,10 +46,18 @@ factors2 0 = []
 factors2 n | (n `mod` 2 == 0) =  2 : factors2 (n `div` 2)
            | otherwise        = [n]
 
-factorsFrom :: Int -> Int -> [Int]
-factorsFrom _ 0 = []
-factorsFrom m n | n == m           = undefined
-                | (n `mod` m == 0) = undefined
-                | otherwise        = undefined
+factorsm :: Int -> Int -> [Int]
+factorsm 0 _ = []
+factorsm m n | (n `mod` m == 0) =  m : factorsm m (n `div` m)
+             | otherwise        = [n]
 
-primeFactors = undefined
+factorsFrom :: Int -> Int -> [Int]
+factorsFrom _ 0 = []  -- To handle non termination execution
+factorsFrom 0 _ = []  -- To handle divide by zero exception
+factorsFrom m n
+        | m >= n           = [n]
+        | (n `mod` m == 0) = m : factorsFrom (m+1) (n `div` m)
+        | otherwise        = factorsFrom (m) n
+
+primeFactors :: Int -> [Int]
+primeFactors n = factorsFrom 2 n
