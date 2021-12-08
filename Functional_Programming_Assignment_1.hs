@@ -155,7 +155,7 @@ a_beta (Variable x) = []
 a_normalize :: Term -> [Term]
 a_normalize n
     | null (beta n) = [n]
-    | otherwise = n : a_normalize (last (a_beta n))
+    | otherwise = n : a_normalize (last (a_beta n))  -- Now select last term in reduct list
 
 a_normal :: Term -> Term
 a_normal n = last (a_normalize n)
