@@ -1,6 +1,4 @@
--- M :: = x ∣ λx.M ∣ MM
-
--- pretty: a function that renders a Term as a lambda-term (but with \ for λ).
+import System.Random
 
 -- Var for variables, as a synonym of String
 type Var = String
@@ -11,7 +9,7 @@ data Term =
     Variable Var
   | Lambda   Var  Term
   | Apply    Term Term
-  -- deriving Show
+    --deriving Show
 
 instance Show Term where
   show = pretty
@@ -34,9 +32,27 @@ pretty = f 0
 
 ------------------------- Assignment 1
 
-numeral :: Int -> Term
-numeral i = undefined
+-- Example Church numerals:
+-- 0
+test_numeral_0 :: Term
+test_numeral_0 = Lambda "f" (Lambda "x" (Variable "x"))
 
+-- 1
+test_numeral_1 :: Term
+test_numeral_1 = Lambda "f" (Lambda "x" (Apply (Variable "f") (Variable "x")))
+
+-- 2
+test_numeral_2 :: Term
+test_numeral_2 = Lambda "f" (Lambda "x" (Apply (Variable "f") (Apply (Variable "f") (Variable "x"))))
+
+-- Function to recursively generate a specific Church Numeral
+numeral :: Int -> Term
+numeral i = Lambda "f" (Lambda "x" (prev_numeral i))
+    where
+        prev_numeral :: Int -> Term
+        prev_numeral i
+            | i == 0 = Variable "x"
+            | otherwise = Apply (Variable "f") (prev_numeral (i-1))
 
 -------------------------
 
@@ -48,23 +64,34 @@ merge (x:xs) (y:ys)
     | x <= y    = x : merge xs (y:ys)
     | otherwise = y : merge (x:xs) ys
 
-
 ------------------------- Assignment 2
 
+-- List comprehension used to generate infinite set of variables with naming convention 'char-num', where char is a single character and num is any number greater than 1 (includes a..z with no numbers initially).
+-- Reference: https://wiki.haskell.org/Cookbook/Lists_and_strings
 variables :: [Var]
-variables = undefined
+variables = char_list ++ numbered_variables
+    where
+        char_list = map(:[]) ['a'..'z'] -- Initial alphabet with no numbers
+        numbered_variables = [ a : show n | n <- [1..] , a <- ['a'..'z'] ]
 
+-- x is the list to filter, y is the list of variable to filter out of x
 filterVariables :: [Var] -> [Var] -> [Var]
-filterVariables = undefined
+filterVariables x y = [i | i <- x, i `notElem` y]
 
+-- Generate a new variable not in var_list
 fresh :: [Var] -> Var
-fresh = undefined
+fresh var_list = head (filterVariables variables var_list)
 
+-- Collect all variable names from a term (lambda or variable) and returns ordered list of variables. Recursively
 used :: Term -> [Var]
-used = undefined
+used (Variable x) = [x]  -- Term: x (variable)
+used (Lambda x m) = merge [x] (used m)  -- Term: λx.M (abstraction)
+used (Apply  m n) = merge (used m) (used n)  -- Term: MN (application)
 
 
 ------------------------- Assignment 3
+
+-- Capture avoiding
 
 rename :: Var -> Var -> Term -> Term
 rename x y (Variable z) = undefined
